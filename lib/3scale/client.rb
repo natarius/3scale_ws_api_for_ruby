@@ -43,12 +43,17 @@ module ThreeScale
       if options[:provider_key].nil? || options[:provider_key] =~ /^\s*$/
         raise ArgumentError, 'missing :provider_key'
       end
+      if options[:service_id].nil? || options[:service_id] =~ /^\s*$/
+        raise ArgumentError, 'missing :service_id'
+      end
 
       @provider_key = options[:provider_key]
+      @service_id = options[:service_id]
       @host = options[:host] || DEFAULT_HOST
     end
 
     attr_reader :provider_key
+    attr_reader :service_id
     attr_reader :host
 
     # Report transaction(s).
@@ -141,6 +146,7 @@ module ThreeScale
     def authorize(options)
       path = "/transactions/authorize.xml" +
         "?provider_key=#{CGI.escape(provider_key)}" +
+        "&service_id=#{CGI.escape(service_id)}" +
         "&app_id=#{CGI.escape(options[:app_id].to_s)}"
       path += "&app_key=#{CGI.escape(options[:app_key])}" if options[:app_key]
 
@@ -188,7 +194,7 @@ module ThreeScale
     def build_authorize_response(body)
       response = AuthorizeResponse.new
       doc = Nokogiri::XML(body)
-
+      puts body.to_s
       if doc.at_css('authorized').content == 'true'
         response.success!
       else
